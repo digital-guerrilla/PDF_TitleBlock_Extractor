@@ -292,4 +292,5 @@ if bbox_dict:
     progress_win.update()
     progress_win.after(1500, progress_win.destroy)
 else:
+    
     print("No areas were selected.")
