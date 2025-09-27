@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import font as tkfont
 from PIL import Image, ImageTk
 import pdfplumber
 import json
@@ -27,6 +28,104 @@ A_SERIES_SIZES_MM = {
     'A5': (148, 210),
 }
 SIZE_TOLERANCE_MM = 5
+
+BG_COLOR = "#f7f7f7"
+DARK_COLOR = "#323232"
+ACCENT_COLOR = "#00aded"
+BORDER_COLOR = "#000000"
+FONT_FAMILY = "Verdana"
+BASE_FONT = (FONT_FAMILY, 10)
+SMALL_FONT = (FONT_FAMILY, 9)
+TITLE_FONT = (FONT_FAMILY, 13, "bold")
+BUTTON_FOREGROUND = "#ffffff"
+BUTTON_ACTIVE_BACKGROUND = "#00c4ff"
+CANVAS_BACKGROUND = "#ffffff"
+DEFAULT_RENDER_TIMEOUT = 15.0
+FALLBACK_RENDER_TIMEOUT = 25.0
+FALLBACK_RENDER_RESOLUTION = 110
+
+
+def setup_global_styles(root):
+    try:
+        default_font = tkfont.nametofont("TkDefaultFont")
+        default_font.configure(family=FONT_FAMILY, size=10)
+        text_font = tkfont.nametofont("TkTextFont")
+        text_font.configure(family=FONT_FAMILY, size=10)
+        heading_font = tkfont.nametofont("TkHeadingFont")
+        heading_font.configure(family=FONT_FAMILY, size=12, weight="bold")
+        menu_font = tkfont.nametofont("TkMenuFont")
+        menu_font.configure(family=FONT_FAMILY, size=10)
+    except tk.TclError:
+        pass
+
+    root.option_add("*Font", f"{FONT_FAMILY} 10")
+    root.option_add("*Background", BG_COLOR)
+    root.option_add("*Foreground", DARK_COLOR)
+    root.option_add("*highlightColor", ACCENT_COLOR)
+    root.option_add("*Entry.Background", "#ffffff")
+    root.option_add("*Entry.Foreground", DARK_COLOR)
+    root.option_add("*Listbox.Background", "#ffffff")
+    root.option_add("*Listbox.Foreground", DARK_COLOR)
+    root.option_add("*Button.Foreground", BUTTON_FOREGROUND)
+    root.option_add("*Button.ActiveForeground", BUTTON_FOREGROUND)
+
+
+def style_primary_button(button):
+    button.configure(
+        bg=ACCENT_COLOR,
+        fg=BUTTON_FOREGROUND,
+        activebackground=BUTTON_ACTIVE_BACKGROUND,
+        activeforeground=BUTTON_FOREGROUND,
+        relief=tk.FLAT,
+        bd=0,
+        highlightthickness=1,
+        highlightbackground=BORDER_COLOR,
+        font=BASE_FONT,
+        cursor="hand2",
+    )
+
+
+def style_secondary_button(button):
+    button.configure(
+        bg=BG_COLOR,
+        fg=DARK_COLOR,
+        activebackground="#e0e0e0",
+        activeforeground=DARK_COLOR,
+        relief=tk.FLAT,
+        bd=0,
+        highlightthickness=1,
+        highlightbackground=BORDER_COLOR,
+        font=BASE_FONT,
+        cursor="hand2",
+    )
+
+
+def style_listbox(listbox):
+    listbox.configure(
+        bg="#ffffff",
+        fg=DARK_COLOR,
+        selectbackground=ACCENT_COLOR,
+        selectforeground=BUTTON_FOREGROUND,
+        relief=tk.FLAT,
+        activestyle="none",
+        highlightbackground=BORDER_COLOR,
+        highlightthickness=1,
+        bd=0,
+        font=BASE_FONT,
+    )
+
+
+def style_entry(entry):
+    entry.configure(
+        bg="#ffffff",
+        fg=DARK_COLOR,
+        relief=tk.FLAT,
+        highlightbackground=BORDER_COLOR,
+        highlightcolor=ACCENT_COLOR,
+        highlightthickness=1,
+        insertbackground=DARK_COLOR,
+        font=BASE_FONT,
+    )
 
 
 try:
@@ -73,6 +172,7 @@ def prompt_for_fields(
 ) -> Tuple[Optional[list[str]], list[str]]:
     dialog = tk.Toplevel(parent)
     dialog.title("Select fields to capture")
+    dialog.configure(bg=BG_COLOR)
     if parent is not None and parent.winfo_exists():
         try:
             parent.update_idletasks()
@@ -82,7 +182,15 @@ def prompt_for_fields(
             dialog.transient(parent)
     dialog.grab_set()
 
-    frame = tk.Frame(dialog, padx=16, pady=16)
+    frame = tk.Frame(
+        dialog,
+        padx=16,
+        pady=16,
+        bg=BG_COLOR,
+        highlightbackground=BORDER_COLOR,
+        highlightthickness=1,
+        bd=0,
+    )
     frame.pack(fill=tk.BOTH, expand=True)
 
     instruction = tk.Label(
@@ -93,13 +201,17 @@ def prompt_for_fields(
         ),
         justify=tk.LEFT,
         wraplength=420,
+        bg=BG_COLOR,
+        fg=DARK_COLOR,
+        font=BASE_FONT,
     )
     instruction.pack(fill=tk.X)
 
-    list_container = tk.Frame(frame)
+    list_container = tk.Frame(frame, bg=BG_COLOR)
     list_container.pack(fill=tk.BOTH, expand=True, pady=(12, 12))
 
     list_scrollbar = tk.Scrollbar(list_container)
+    list_scrollbar.configure(activebackground=ACCENT_COLOR)
     list_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     listbox = tk.Listbox(
@@ -109,6 +221,7 @@ def prompt_for_fields(
         width=40,
         height=12,
     )
+    style_listbox(listbox)
     listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     listbox.config(yscrollcommand=list_scrollbar.set)
     list_scrollbar.config(command=listbox.yview)
@@ -141,13 +254,14 @@ def prompt_for_fields(
         if field in default_set:
             listbox.select_set(idx)
 
-    entry_frame = tk.Frame(frame)
+    entry_frame = tk.Frame(frame, bg=BG_COLOR)
     entry_frame.pack(fill=tk.X)
 
     entry_var = tk.StringVar()
-    entry_label = tk.Label(entry_frame, text="New field:")
+    entry_label = tk.Label(entry_frame, text="New field:", bg=BG_COLOR, fg=DARK_COLOR, font=BASE_FONT)
     entry_label.pack(side=tk.LEFT)
     entry = tk.Entry(entry_frame, textvariable=entry_var)
+    style_entry(entry)
     entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 6))
 
     status_var = tk.StringVar(value="")
@@ -175,9 +289,17 @@ def prompt_for_fields(
         entry.focus_set()
 
     add_button = tk.Button(entry_frame, text="Add", command=add_field)
+    style_primary_button(add_button)
     add_button.pack(side=tk.RIGHT)
 
-    status_label = tk.Label(frame, textvariable=status_var, anchor="w", fg="red")
+    status_label = tk.Label(
+        frame,
+        textvariable=status_var,
+        anchor="w",
+        fg=ACCENT_COLOR,
+        bg=BG_COLOR,
+        font=SMALL_FONT,
+    )
     status_label.pack(fill=tk.X, pady=(8, 0))
 
     selected_fields: Optional[list[str]] = None
@@ -194,13 +316,15 @@ def prompt_for_fields(
     def cancel():
         dialog.destroy()
 
-    button_frame = tk.Frame(frame)
+    button_frame = tk.Frame(frame, bg=BG_COLOR)
     button_frame.pack(fill=tk.X, pady=(12, 0))
 
     cancel_button = tk.Button(button_frame, text="Cancel", command=cancel)
+    style_secondary_button(cancel_button)
     cancel_button.pack(side=tk.RIGHT)
 
     confirm_button = tk.Button(button_frame, text="Continue", command=confirm)
+    style_primary_button(confirm_button)
     confirm_button.pack(side=tk.RIGHT, padx=(0, 8))
 
     entry.bind('<Return>', lambda _event: add_field())
@@ -260,44 +384,101 @@ def prepare_page_image(
     max_width=2000,
     max_height=2000,
     resolution=150,
+    timeout=DEFAULT_RENDER_TIMEOUT,
+    enable_fallback=True,
 ) -> Tuple[Image.Image, float, Tuple[float, float, float, float], int]:
     LOGGER.debug("Preparing page image for: %s", pdf_path)
 
-    def target():
-        nonlocal result
-        try:
-            with pdfplumber.open(pdf_path) as pdf:
-                page = pdf.pages[0]
-                LOGGER.debug("Page dimensions (points): width=%.2f, height=%.2f", page.width, page.height)
-                pil_image = page.to_image(resolution=resolution).original
-                orig_width, orig_height = pil_image.size
-                LOGGER.debug("Original image size: width=%d, height=%d", orig_width, orig_height)
-                scale = min(max_width / orig_width, max_height / orig_height, 1.0)
-                display_width = max(1, int(orig_width * scale))
-                display_height = max(1, int(orig_height * scale))
-                LOGGER.debug("Scaled image size: width=%d, height=%d", display_width, display_height)
-                display_image = pil_image.resize((display_width, display_height), RESAMPLE_FILTER)
-                pdf_x0, pdf_y0, pdf_x1, pdf_y1 = page.mediabox
-                LOGGER.debug("PDF media box: x0=%.2f, y0=%.2f, x1=%.2f, y1=%.2f", pdf_x0, pdf_y0, pdf_x1, pdf_y1)
-                result = (display_image, scale, (pdf_x0, pdf_y0, pdf_x1, pdf_y1), display_height)
-        except Exception as e:
-            LOGGER.warning("Error while preparing page image for %s: %s", pdf_path, e)
-            result = None
+    def render(render_resolution: int, wait_timeout: float):
+        nonlocal result, thread_exception
+
+        def target():
+            nonlocal result, thread_exception
+            try:
+                with pdfplumber.open(pdf_path) as pdf:
+                    page = pdf.pages[0]
+                    LOGGER.debug(
+                        "Page dimensions (points): width=%.2f, height=%.2f",
+                        page.width,
+                        page.height,
+                    )
+                    pil_image = page.to_image(resolution=render_resolution).original
+                    orig_width, orig_height = pil_image.size
+                    LOGGER.debug(
+                        "Original image size at %dpi: width=%d, height=%d",
+                        render_resolution,
+                        orig_width,
+                        orig_height,
+                    )
+                    scale = min(max_width / orig_width, max_height / orig_height, 1.0)
+                    display_width = max(1, int(orig_width * scale))
+                    display_height = max(1, int(orig_height * scale))
+                    LOGGER.debug(
+                        "Scaled image size: width=%d, height=%d",
+                        display_width,
+                        display_height,
+                    )
+                    display_image = pil_image.resize((display_width, display_height), RESAMPLE_FILTER)
+                    pdf_x0, pdf_y0, pdf_x1, pdf_y1 = page.mediabox
+                    LOGGER.debug(
+                        "PDF media box: x0=%.2f, y0=%.2f, x1=%.2f, y1=%.2f",
+                        pdf_x0,
+                        pdf_y0,
+                        pdf_x1,
+                        pdf_y1,
+                    )
+                    result = (display_image, scale, (pdf_x0, pdf_y0, pdf_x1, pdf_y1), display_height)
+            except Exception as exc:  # pylint: disable=broad-except
+                thread_exception = exc
+                result = None
+
+        render_thread = threading.Thread(target=target, daemon=True)
+        render_thread.start()
+        render_thread.join(wait_timeout)
+        if render_thread.is_alive():
+            LOGGER.warning(
+                "Timeout while preparing page image for: %s (resolution=%s, timeout=%.1fs)",
+                pdf_path,
+                render_resolution,
+                wait_timeout,
+            )
+            return False
+        if thread_exception:
+            LOGGER.warning(
+                "Error while preparing page image for %s: %s",
+                pdf_path,
+                thread_exception,
+            )
+            return False
+        return True
 
     result: Optional[Tuple[Image.Image, float, Tuple[float, float, float, float], int]] = None
-    thread = threading.Thread(target=target)
-    thread.start()
-    thread.join(timeout=2)  # Set a 2-second timeout
+    thread_exception: Optional[Exception] = None
+    display_height = 0  # initialized for type checking; updated during render
 
-    if thread.is_alive():
-        LOGGER.warning("Timeout while preparing page image for: %s", pdf_path)
-        thread.join()  # Ensure the thread is cleaned up
-        raise RuntimeError(f"Timeout while preparing page image for {pdf_path}")
+    if render(resolution, timeout):
+        if result is None:
+            raise RuntimeError(f"Failed to render page image for {pdf_path}")
+        return result
 
-    if result is None:
-        raise RuntimeError(f"Failed to render page image for {pdf_path}")
+    if enable_fallback:
+        LOGGER.info(
+            "Retrying render for %s with lower resolution (%sdpi) and extended timeout (%.1fs).",
+            pdf_path,
+            FALLBACK_RENDER_RESOLUTION,
+            FALLBACK_RENDER_TIMEOUT,
+        )
+        result = None
+        thread_exception = None
+        if render(FALLBACK_RENDER_RESOLUTION, FALLBACK_RENDER_TIMEOUT):
+            if result is None:
+                raise RuntimeError(f"Failed to render page image for {pdf_path}")
+            return result
 
-    return result
+    if thread_exception:
+        raise RuntimeError(f"Failed to render page image for {pdf_path}: {thread_exception}")
+
+    raise RuntimeError(f"Timeout while preparing page image for {pdf_path}")
 
 
 SHARED_CONFIG = None
@@ -418,6 +599,7 @@ class PDFCropper(tk.Toplevel):
         self.title("Bounding Box Editor")
         self.geometry("1920x1000")
         self.minsize(600, 500)
+        self.configure(bg=BG_COLOR)
 
         self.image = None
         self.pdf_bbox = None
@@ -441,42 +623,87 @@ class PDFCropper(tk.Toplevel):
         self.session_done = tk.BooleanVar(value=False)
         self.session_result = False
         self.current_size = ""
+        self.pending_view_anchor = None
 
-        main_frame = tk.Frame(self)
+        main_frame = tk.Frame(
+            self,
+            bg=BG_COLOR,
+            highlightbackground=BORDER_COLOR,
+            highlightthickness=1,
+            bd=0,
+        )
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.canvas = tk.Canvas(main_frame, width=self.view_width, height=self.view_height, background="black")
+        self.canvas = tk.Canvas(
+            main_frame,
+            width=self.view_width,
+            height=self.view_height,
+            background=CANVAS_BACKGROUND,
+            highlightbackground=BORDER_COLOR,
+            highlightthickness=1,
+            bd=0,
+        )
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        sidebar = tk.Frame(main_frame, width=320, padx=12, pady=12)
+        sidebar = tk.Frame(
+            main_frame,
+            width=320,
+            padx=12,
+            pady=12,
+            bg=BG_COLOR,
+            highlightbackground=BORDER_COLOR,
+            highlightthickness=1,
+            bd=0,
+        )
         sidebar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.size_label = tk.Label(sidebar, text="", anchor="w", font=("Segoe UI", 12, "bold"))
+        self.size_label = tk.Label(sidebar, text="", anchor="w", font=TITLE_FONT, bg=BG_COLOR, fg=DARK_COLOR)
         self.size_label.pack(fill=tk.X, pady=(0, 10))
 
         self.field_list = tk.Listbox(sidebar, exportselection=False, height=15)
+        style_listbox(self.field_list)
         self.field_list.pack(fill=tk.BOTH, expand=True)
         self.field_list.bind("<<ListboxSelect>>", self.on_field_select)
-        self.listbox_default_bg = self.field_list.cget('bg')
-        self.listbox_default_fg = self.field_list.cget('fg')
-        self.listbox_saved_bg = '#E8F5E9'
-        self.listbox_saved_fg = '#1B5E20'
-        self.field_list.config(selectbackground='#BBDEFB', selectforeground='#0D47A1')
+        self.listbox_default_bg = "#ffffff"
+        self.listbox_default_fg = DARK_COLOR
+        self.listbox_saved_bg = '#d9f8ff'
+        self.listbox_saved_fg = DARK_COLOR
+        self.field_list.config(selectbackground=ACCENT_COLOR, selectforeground=BUTTON_FOREGROUND)
 
         self.save_button = tk.Button(sidebar, text="Save Selection", command=self.save_area, state='disabled')
+        style_primary_button(self.save_button)
         self.save_button.pack(fill=tk.X, pady=(10, 0))
 
         self.clear_button = tk.Button(sidebar, text="Clear Field", command=self.clear_field, state='disabled')
+        style_secondary_button(self.clear_button)
         self.clear_button.pack(fill=tk.X, pady=(6, 0))
 
         self.finish_button = tk.Button(sidebar, text="Finish Size", command=self.finish)
+        style_primary_button(self.finish_button)
         self.finish_button.pack(fill=tk.X, pady=(10, 0))
 
         self.status_var = tk.StringVar(value="Select a field to start drawing.")
-        self.status_label = tk.Label(sidebar, textvariable=self.status_var, wraplength=280, justify=tk.LEFT)
+        self.status_label = tk.Label(
+            sidebar,
+            textvariable=self.status_var,
+            wraplength=280,
+            justify=tk.LEFT,
+            bg=BG_COLOR,
+            fg=ACCENT_COLOR,
+            font=SMALL_FONT,
+        )
         self.status_label.pack(fill=tk.X, pady=(10, 0))
 
-        self.result_label = tk.Label(sidebar, text="", anchor="w", wraplength=280, justify=tk.LEFT)
+        self.result_label = tk.Label(
+            sidebar,
+            text="",
+            anchor="w",
+            wraplength=280,
+            justify=tk.LEFT,
+            bg=BG_COLOR,
+            fg=DARK_COLOR,
+            font=SMALL_FONT,
+        )
         self.result_label.pack(fill=tk.X, pady=(10, 0))
 
         self.canvas.bind('<ButtonPress-1>', self.on_press)
@@ -517,6 +744,7 @@ class PDFCropper(tk.Toplevel):
         self.session_result = False
         self.session_done = tk.BooleanVar(value=False)
         self.current_size = size_label
+        self.pending_view_anchor = 'bottom_right'
         self.size_label.config(text=f"Sheet size: {size_label}")
         self.status_var.set(status_message if self.selected_field else "No fields configured for this session.")
         self.result_label.config(text="")
@@ -595,6 +823,11 @@ class PDFCropper(tk.Toplevel):
         zoomed_image = self.image.resize((zoomed_width, zoomed_height), RESAMPLE_FILTER)
         max_x = max(0, zoomed_width - self.view_width)
         max_y = max(0, zoomed_height - self.view_height)
+        if self.pending_view_anchor:
+            if self.pending_view_anchor == 'bottom_right':
+                self.offset_x = max_x
+                self.offset_y = max_y
+            self.pending_view_anchor = None
         self.offset_x = min(max(self.offset_x, 0), max_x)
         self.offset_y = min(max(self.offset_y, 0), max_y)
         cropped = zoomed_image.crop((self.offset_x, self.offset_y, self.offset_x + self.view_width, self.offset_y + self.view_height))
@@ -611,7 +844,7 @@ class PDFCropper(tk.Toplevel):
             coords = self._pdf_to_canvas(box)
             if not coords:
                 continue
-            color = "#FFC107" if field == self.selected_field else "#4CAF50"
+            color = ACCENT_COLOR if field == self.selected_field else DARK_COLOR
             width = 2 if field == self.selected_field else 1
             self.canvas.create_rectangle(*coords, outline=color, width=width, tags="saved_box")
 
@@ -620,7 +853,13 @@ class PDFCropper(tk.Toplevel):
             return
         coords = self._pdf_to_canvas(self.last_box)
         if coords:
-            self.canvas.create_rectangle(*coords, outline="#2196F3", dash=(4, 2), width=2, tags="preview_box")
+            self.canvas.create_rectangle(
+                *coords,
+                outline=ACCENT_COLOR,
+                dash=(4, 2),
+                width=2,
+                tags="preview_box",
+            )
 
     def _pdf_to_canvas(self, box):
         if not self.image or not self.pdf_bbox:
@@ -811,6 +1050,8 @@ def main():
     configure_logging(None)
     LOGGER.info("Starting PDF extraction run")
     root = tk.Tk()
+    setup_global_styles(root)
+    root.configure(bg=BG_COLOR)
     root.withdraw()
     try:
         pdf_folder = filedialog.askdirectory(title="Select folder containing PDFs")
